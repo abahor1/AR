@@ -1,0 +1,125 @@
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1.5em;
+        }
+        header h1 {
+            font-size: 2em;
+        }
+        nav {
+            background-color: #34495e;
+            padding: 1em;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1.5em;
+            font-size: 1.1em;
+        }
+        nav a:hover {
+            color: #3498db;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+         .ddd {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .dd {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        .dd:hover {
+            transform: translateY(-5px);
+        }
+        .dd img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .dda-info {
+            padding: 15px;
+            text-align: center;
+        }
+        .dda-info h3 {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .dda-info p {
+            color: #777;
+            margin-bottom: 10px;
+        }
+        .dda-info a {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .dda-info a:hover {
+            background-color: #2980b9;
+        }
+
+        footer {
+            background-color: #086f81;
+            color: white;
+            text-align: center;
+            padding: 1em;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .products {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            header h1 {
+                font-size: 1.5em;
+            }
+            nav a {
+                margin: 0 0.5em;
+                font-size: 1em;
+            }
+        }
+        @media (max-width: 480px) {
+            .dd {
+                grid-template-columns: 1fr;
+            }
+            .dd img {
+                height: 100px;
+            }
+        } 
+        .ar{
+              text-align: center;
+            padding: 1.5em;
+        }
+
+
+
+
+
+
+
+        

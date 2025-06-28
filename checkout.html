@@ -1,0 +1,219 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إتمام الشراء</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .cart-items {
+            border: 1px solid #ddd;
+            padding: 10px;
+            min-height: 50px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 500px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        p.note {
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>إتمام الشراء</h1>
+    <h2>سلة المشتريات</h2>
+    <div id="cart-items" class="cart-items"></div>
+    <p>الإجمالي: <span id="cart-total">0</span> ريال</p>
+    <form id="checkout-form">
+        <div>
+            <label for="name">الاسم:</label>
+            <input type="text" id="name" name="name" required aria-label="أدخل اسمك">
+            <p id="name-error" class="error" style="display: none;">يرجى إدخال الاسم</p>
+        </div>
+        <div>
+            <label for="phone">رقم الهاتف:</label>
+            <input type="tel" id="phone" name="phone" required aria-label="أدخل رقم هاتفك" pattern="[0-9]{10,}">
+            <p id="phone-error" class="error" style="display: none;">يرجى إدخال رقم هاتف صالح (10 أرقام على الأقل)</p>
+        </div>
+        <div>
+            <label for="address">العنوان:</label>
+            <textarea id="address" name="address" required aria-label="أدخل عنوانك"></textarea>
+            <p id="address-error" class="error" style="display: none;">يرجى إدخال العنوان</p>
+        </div>
+        <button type="submit" aria-label="إرسال طلب الشراء">إرسال الطلب</button>
+        <p class="note">ملاحظة: سيتم فتح برنامج البريد الإلكتروني الخاص بك مع طلب مُعد مسبقًا. يرجى التحقق من التفاصيل وإرسال البريد الإلكتروني.</p>
+    </form>
+    <a href="index.html" aria-label="العودة إلى صفحة المنتجات">العودة إلى المنتجات</a>
+    <script>
+        function loadCart() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            
+            if (cart.length > 0) {
+                cart.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'cart-item';
+                    itemElement.innerHTML = `
+                        <span>${item.name}</span>
+                        <span>${item.price} ريال</span>
+                    `;
+                    cartItems.appendChild(itemElement);
+                });
+                
+                const total = cart.reduce((sum, item) => sum + item.price, 0);
+                cartTotal.textContent = total;
+            } else {
+                cartItems.innerHTML = '<p>سلة المشتريات فارغة</p>';
+            }
+            
+            return cart;
+        }
+        
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+            
+            // Validation
+            let isValid = true;
+            document.getElementById('name-error').style.display = name ? 'none' : 'block';
+            document.getElementById('phone-error').style.display = phone && /^[0-9]{10,}$/.test(phone) ? 'none' : 'block';
+            document.getElementById('address-error').style.display = address ? 'none' : 'block';
+            
+            if (!name || !phone || !address || !/^[0-9]{10,}$/.test(phone)) {
+                isValid = false;
+            }
+            
+            if (isValid) {
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const cartSummary = cart.length > 0 ? cart.map(item => `${item.name}: ${item.price} ريال`).join('\n') : 'لا توجد منتجات في السلة';
+                const total = cart.reduce((sum, item) => sum + item.price, 0);
+                
+                // Construct email body
+                const emailBody = `
+طلب جديد
+الاسم: ${name}
+رقم الهاتف: ${phone}
+العنوان: ${address}
+المنتجات:
+${cartSummary}
+الإجمالي: ${total} ريال
+                `.trim();
+                
+                // Replace with your actual email address
+                const emailAddress = 'abahorabahorread@gmail.com';
+                const subject = encodeURIComponent('طلب شراء جديد');
+                const body = encodeURIComponent(emailBody);
+                
+                // Create mailto link and open email client
+                window.location.href = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
+                
+                // Clear cart and redirect
+                localStorage.removeItem('cart');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000); // Delay to allow email client to open
+            }
+        });
+        
+        // Load cart on page load
+        loadCart();
+    </script>
+</body>
+</html>
